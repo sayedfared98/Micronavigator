@@ -66,3 +66,52 @@ python benchmark.py
 ### Output:
 - A summary table in the console showing success status, timing, and path length.
 - Visualization images saved to the outputs/ directory.
+
+## Algorithm details
+
+1. Potential Field Generation
+
+The system calculates a scalar value for every cell in the grid:
+
+- Attractive Potential: Linearly increases with distance from the goal (Conic Well).
+
+- Repulsive Potential: Exponentially increases near obstacles to create a "barrier."
+
+2. Gradient Descent Planner
+
+The robot acts as a marble rolling down a hill:
+
+- It evaluates its 8 immediate neighbors.
+
+- It moves to the neighbor with the lowest potential value (steepest descent).
+
+- If it reaches the goal, the path is complete.
+
+3. Local Minima Recovery
+
+Pure potential fields often get stuck in "traps" (e.g., U-shaped walls) where the repulsive force cancels out the attractive force.
+
+- Detection: The system monitors the robot's history. If it oscillates or stops moving before reaching the goal, it triggers an alert.
+
+- Recovery: The robot enters a temporary "Random Walk" mode to wander away from the trap before resuming gradient descent.
+
+## Configuration:
+You can tune the physics of the planner in benchmark.py or main.py by adjusting the PotentialFieldGenerator parameters:
+```code
+pf_gen = PotentialFieldGenerator(
+    grid, 
+    attract_gain=3.0,       # Strength of pull towards goal
+    repuls_gain=20.0,       # Strength of push away from walls
+    influence_radius=1.5    # How far obstacles push back
+)
+```
+- High Attraction / Low Repulsion: Helps the robot be "braver" and pass through narrow gaps.
+
+- Low Attraction / High Repulsion: Makes the robot safer but more likely to get stuck in narrow doors.
+
+## Requirements
+- Python 3.11+
+
+- matplotlib
+
+- numpy
