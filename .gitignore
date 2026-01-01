@@ -1,0 +1,15 @@
+cat <<EOT >> .gitignore
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Mac system files
+.DS_Store
+
+# Generated output images
+outputs/
+
+# Environment folder (optional, if you created one inside the project)
+env/
+venv/
+EOT
