@@ -19,12 +19,13 @@ Micronavigator/
 │   ├── grid.py         # Map loading & Configuration Space inflation
 │   ├── fields.py       # Physics engine (Potential Field calculations)
 │   └── navigation.py   # Gradient Descent planner & Recovery logic
-├── map/                # Text-based scenario maps
+├── map/                # High-resolution scenario maps (*_highres.txt)
 ├── utils/
-│   └── visualizer.py   # Plotting tools (Heatmaps + Path)
-├── outputs/            # Generated visualization images
-├── main.py             # Single-scenario execution script
-├── benchmark.py        # Batch evaluation script
+│   └── visualizer.py   # Static plotting tools for benchmarking
+├── outputs/            # Generated benchmark images
+├── main.py             # Live simulation runner with CLI arguments
+├── benchmark.py        # Batch evaluation script (Headless)
+├── upscale_map.py      # Tool to increase map resolution
 └── requirements.txt    # Python dependencies
 ```
 
@@ -53,7 +54,7 @@ pip install -r requirements.txt
 ### Run a Single Scenario
 To plan a path for a specific map and see the immediate console output:
 ```code
-python main.py
+python main.py --map map/scenario3_maze_highres.txt
 ```
 You can modify main.py to change the map file or robot dimensions.
 
@@ -66,6 +67,15 @@ python benchmark.py
 ### Output:
 - A summary table in the console showing success status, timing, and path length.
 - Visualization images saved to the outputs/ directory.
+
+### Upscale Custom Maps
+If you have a small ASCII map (e.g., 10x10) and want to convert it to a high-resolution map (e.g., 40x40) so the robot moves more smoothly:
+1. Place your .txt map in the map/ folder.
+2. Run the upscaler script:
+```code
+python upscale_map.py
+```
+3. A new file _highres.txt will be generated automatically.
 
 ## Algorithm details
 
@@ -91,9 +101,11 @@ The robot acts as a marble rolling down a hill:
 
 Pure potential fields often get stuck in "traps" (e.g., U-shaped walls) where the repulsive force cancels out the attractive force.
 
-- Detection: The system monitors the robot's history. If it oscillates or stops moving before reaching the goal, it triggers an alert.
+- Detection: The system detects if the robot is stuck in a loop or oscillating.
 
-- Recovery: The robot enters a temporary "Random Walk" mode to wander away from the trap before resuming gradient descent.
+- Reaction: It switches to Recovery Mode, performing a random walk for ~100 steps.
+
+- Visualization: In Live View, the status changes to Mode: RECOVERY, and you can see the robot randomly wandering to find an exit before resuming Gradient Descent.
 
 ## Configuration:
 You can tune the physics of the planner in benchmark.py or main.py by adjusting the PotentialFieldGenerator parameters:
