@@ -54,7 +54,7 @@ pip install -r requirements.txt
 ### Run a Single Scenario
 To plan a path for a specific map and see the immediate console output:
 ```code
-python main.py --map map/scenario3_maze_highres.txt
+python main.py --map map/scenario3_maze_highres.txt --width 2 --height 2
 ```
 You can modify main.py to change the map file or robot dimensions.
 
