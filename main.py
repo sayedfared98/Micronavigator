@@ -1,5 +1,6 @@
 import sys
 import os
+import argparse
 
 # Add the current directory to path so imports work easily
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -8,37 +9,50 @@ from core.grid import OccupancyGrid
 from core.fields import PotentialFieldGenerator
 from core.navigation import GradientDescentNavigator
 
-# Configuration
-MAP_FILE = "map/scenario1_simple.txt" # Change this to test other maps
-ROBOT_W = 2  # Variable size (try changing to 1 or 3)
+# Default Configuration
+ROBOT_W = 2 
 ROBOT_H = 2
 
 def main():
+    # 1. Parse Command Line Arguments
+    parser = argparse.ArgumentParser(description="Micronavigator Path Planner")
+    parser.add_argument(
+        "--map", 
+        type=str, 
+        default="map/scenario1_simple.txt", 
+        help="Path to the .txt map file (default: map/scenario1_simple.txt)"
+    )
+    args = parser.parse_args()
+    map_file = args.map
+
     print(f"--- Micronavigator (Potential Field) ---")
-    print(f"Map: {MAP_FILE}")
+    print(f"Map: {map_file}")
     print(f"Robot Size: {ROBOT_H}x{ROBOT_W}")
 
-    # 1. Initialize Grid (Loads map & Inflates obstacles)
+    # 2. Initialize Grid (Loads map & Inflates obstacles)
     try:
-        grid = OccupancyGrid(MAP_FILE, robot_width=ROBOT_W, robot_height=ROBOT_H)
+        grid = OccupancyGrid(map_file, robot_width=ROBOT_W, robot_height=ROBOT_H)
     except Exception as e:
         print(f"Error loading map: {e}")
         return
 
-    # 2. Generate Potential Field
+    # 3. Generate Potential Field
     print("Generating Potential Field...", end="")
-    # Higher repulsive gain (200.0) helps creates steeper "walls" around obstacles
-    field_gen = PotentialFieldGenerator(grid, attract_gain=1.0, repuls_gain=200.0)
-    potential_map = field_gen.compute_full_field()
+    # Using the "Braver" tuning from your successful benchmark
+    pf_gen = PotentialFieldGenerator(grid, attract_gain=3.0, repuls_gain=20.0, influence_radius=1.5)
+    potential_map = pf_gen.compute_full_field()
     print(" Done.")
 
-    # 3. Plan Path (Gradient Descent)
-    print("Planning Path...", end="")
+    # 4. Plan Path (Gradient Descent) with Live View
+    print("Planning Path... (Check the popup window)")
     navigator = GradientDescentNavigator(grid)
-    path = navigator.plan(potential_map, grid.start_pos, grid.goal_pos)
+    
+    # Enable Live View
+    path = navigator.plan(potential_map, grid.start_pos, grid.goal_pos, live_view=True)
+    
     print(" Done.")
 
-    # 4. Report Statistics
+    # 5. Report Statistics
     print("\n" + "="*40)
     print(" PLANNING STATISTICS")
     print("="*40)
@@ -48,10 +62,8 @@ def main():
     print(f"Nodes Visited: {navigator.nodes_visited}")
     print("="*40)
     
-    # 5. Export/Save (Simple Console Preview)
     if navigator.success:
         print(f"Path found! Ends at {path[-1]}")
-        # Note: You can implement a visualizer here later
     else:
         print("Robot failed to reach the goal.")
 
