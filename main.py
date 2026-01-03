@@ -2,6 +2,10 @@ import sys
 import os
 import argparse
 
+import matplotlib
+matplotlib.use('QtAgg') # or 'MacOSX'
+import matplotlib.pyplot as plt
+
 # Add the current directory to path so imports work easily
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
