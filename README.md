@@ -53,7 +53,7 @@ This method treats the robot as a particle moving through a landscape of forces.
 
 ### Run Live Simulation
 To watch the robot plan a path in real-time:
-```code
+```bash
 python main.py --map map/scenario3_maze_highres.txt
 ```
 Note: You can specify --width and --height to change the robot size.
